@@ -8,8 +8,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, position, groups, obstacle_sprites, create_attack, destroy_attack):
         super().__init__(groups)
         self.image = pygame.image.load('./graphics/test/player.png').convert_alpha()
-        self.rect = self.image.get_rect(topleft=position)
-        self.hitbox = self.rect.inflate(-2, -26)
+        self.rect = self.image.get_rect(topleft = position)
+        self.hitbox = self.rect.inflate(-5, -26)
 
         # graphics setup
         self.import_player_assets()
@@ -91,7 +91,7 @@ class Player(pygame.sprite.Sprite):
                 self.create_attack()
 
             # magic input
-            if keys[pygame.K_c]:
+            if keys[pygame.K_e]:
                 self.attacking = True
                 self.attack_time = pygame.time.get_ticks()
 
