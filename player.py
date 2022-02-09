@@ -44,7 +44,7 @@ class Player(Entity):
 
 
         # stats
-        self.stats = {'health': 100, 'energy': 60, 'attack': 10, 'magic': 4, 'speed': 5, 'cooldown': 400}
+        self.stats = {'health': 100, 'energy': 60, 'attack': 10, 'magic': 4, 'speed': 5, 'cooldown': 200}
         self.health = self.stats['health']
         self.energy = self.stats['energy']
         self.exp = 123
