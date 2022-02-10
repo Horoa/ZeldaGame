@@ -6,11 +6,11 @@ from entity import Entity
 
 
 class Player(Entity):
-    def __init__(self, position, groups, obstacle_sprites, create_attack, destroy_attack, create_magic, destroy_magic):
+    def __init__(self, position, groups, obstacle_sprites, create_attack, destroy_attack, create_magic):
         super().__init__(groups)
         self.image = pygame.image.load('./graphics/test/player.png').convert_alpha()
         self.rect = self.image.get_rect(topleft=position)
-        self.hitbox = self.rect.inflate(-5, -26)
+        self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET['player'])
 
         # graphics setup
         self.import_player_assets()
@@ -19,6 +19,10 @@ class Player(Entity):
         self.idle = True
 
         self.sprinting = False
+        self.exhausted = False
+        self.exhausted_duration = 500
+        self.exhausted_time = None
+
         self.attacking = False
         self.attack_time = None
 
@@ -32,29 +36,35 @@ class Player(Entity):
         self.can_switch_weapon = True
         self.weapon_switch_time = None
         self.switch_duration_cooldown_weapon = 200
-        self.switch_duration_cooldown_magic = 1000
+        self.switch_duration_cooldown_magic = 500
 
         # magic
         self.create_magic = create_magic
-        self.destroy_magic = destroy_magic
         self.magic_index = 0
         self.magic = list(magic_data.keys())[self.magic_index]
         self.can_switch_magic = True
         self.magic_switch_time = None
 
-
         # stats
-        self.stats = {'health': 100, 'energy': 60, 'attack': 10, 'magic': 4, 'speed': 5, 'cooldown': 200}
+        self.min_stats = {'health': 50, 'energy': 20, 'mana': 20, 'attack': 5, 'magic': 3, 'speed': 5}
+        self.stats = {'health': 100, 'energy': 60, 'mana': 60, 'attack': 10, 'magic': 4, 'speed': 5}
+        self.max_stats = {'health': 300, 'energy': 150, 'mana': 150, 'attack': 50, 'magic': 16, 'speed': 9}
+        self.upgrade_cost = {'health': 50, 'energy': 50, 'mana': 100, 'attack': 50, 'magic': 100, 'speed': 200}
         self.health = self.stats['health']
         self.energy = self.stats['energy']
-        self.exp = 123
+        self.mana = self.stats['mana']
+        self.exp = 0
         self.speed = self.stats['speed']
-        self.attack_cooldown = self.stats['cooldown']
+        self.attack_cooldown = 200
 
         # damage timer
         self.vulnerable = True
         self.hurt_time = None
         self.invulnerability_duration = 500
+
+        # import a sound
+        self.weapon_attack_sound = pygame.mixer.Sound('./audio/sword.wav')
+        self.weapon_attack_sound.set_volume(0.05)
 
     def import_player_assets(self):
         character_path = './graphics/player/'
@@ -78,6 +88,12 @@ class Player(Entity):
 
     def input(self):
         keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_a]:
+            self.health = self.stats['health']
+            self.energy = self.stats['energy']
+            self.mana = self.stats['mana']
+            self.exp *= 2
 
         # movement input
         if not self.attacking:
@@ -104,13 +120,15 @@ class Player(Entity):
                 self.direction.x = 0
 
             # attack input
-            if keys[pygame.K_z]:
+            if keys[pygame.K_z] and not self.exhausted and self.energy > 0:
                 self.attacking = True
+                self.energy = max(self.energy - weapon_data[self.weapon]['energy'], 0)
                 self.attack_time = pygame.time.get_ticks()
                 self.create_attack()
+                self.weapon_attack_sound.play()
 
             # magic input
-            if keys[pygame.K_e]:
+            if keys[pygame.K_e] and not self.exhausted:
                 self.attacking = True
                 self.attack_time = pygame.time.get_ticks()
                 style = list(magic_data.keys())[self.magic_index]
@@ -152,7 +170,7 @@ class Player(Entity):
                     self.magic = list(magic_data.keys())[self.magic_index]
 
             # run
-            if keys[pygame.K_LSHIFT]:
+            if keys[pygame.K_LSHIFT] and self.energy > 0 and not self.exhausted and not self.idle:
                 self.sprinting = True
             else:
                 self.sprinting = False
@@ -194,6 +212,10 @@ class Player(Entity):
             if current_time - self.hurt_time >= self.invulnerability_duration:
                 self.vulnerable = True
 
+        if self.exhausted:
+            if current_time - self.exhausted_time >= self.exhausted_duration:
+                self.exhausted = False
+
     def animate(self):
         animation = self.animations[self.status]
 
@@ -216,11 +238,59 @@ class Player(Entity):
     def get_full_weapon_damage(self):
         base_damage = self.stats['attack']
         weapon_damage = weapon_data[self.weapon]['damage']
-        return (base_damage * weapon_damage)//10
+        return (base_damage * weapon_damage) // 10
+
+    def get_full_magic_damage(self):
+        base_damage = self.stats['magic']
+        spell_damage = magic_data[self.magic]['strength']
+        return (base_damage * spell_damage) // 4
+
+    # doesn't work currently
+    def health_recovery(self):
+        if self.stats['health'] == 300:
+            self.health = min(self.health + 3 if self.idle else 1, self.stats['health'])
+        elif self.stats['health'] > 200:
+            self.health = min(self.health + 1 if self.idle else 0.3, self.stats['health'])
+        elif self.stats['health'] > 150:
+            self.health = min(self.health + 0.3 if self.idle else 0, self.stats['health'])
+
+    def energy_recovery(self):
+        if self.sprinting:
+            self.energy = max(self.energy - 0.5, 0)
+        elif self.energy <= self.stats['energy']:
+            self.energy = min((self.energy + (0.3 if self.idle else 0.1) * (self.stats['energy']//60)), self.stats['energy'])
+
+    def mana_recovery(self):
+        if self.mana <= self.stats['mana'] and self.stats['magic'] > 10:
+            self.mana = min(self.mana + (0.001 * self.stats['magic'] * self.stats['magic']), self.stats['mana'])
+
+    def check_exhausted(self):
+        if self.energy == 0:
+            if not self.exhausted:
+                self.exhausted_duration += 500
+            self.exhausted = True
+            self.exhausted_time = pygame.time.get_ticks()
+        elif self.energy == self.stats['energy'] and self.exhausted_duration != 500 and not self.exhausted:
+            self.exhausted_duration = 500
+
+    def check_death(self):
+        if self.health <= 0:
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+    def get_value_by_index(self, index):
+        return list(self.stats.values())[index]
+
+    def get_cost_by_index(self, index):
+        return list(self.upgrade_cost.values())[index]
 
     def update(self):
+        self.check_death()
         self.input()
         self.cooldowns()
         self.get_status()
         self.animate()
-        self.move(self.speed + (5 if self.sprinting else 0))
+        self.move(self.stats['speed'] * (1.5 if self.sprinting else (0.5 if self.exhausted else 1)))
+        self.check_exhausted()
+        self.energy_recovery()
+        self.mana_recovery()
+        print(self.health)
