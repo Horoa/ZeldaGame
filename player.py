@@ -261,8 +261,8 @@ class Player(Entity):
             self.energy = min((self.energy + (0.3 if self.idle else 0.1) * (self.stats['energy']//60)), self.stats['energy'])
 
     def mana_recovery(self):
-        if self.mana <= self.stats['mana'] and self.stats['magic'] > 10:
-            self.mana = min(self.mana + (0.001 * self.stats['magic'] * self.stats['magic']), self.stats['mana'])
+        if self.mana <= self.stats['mana']:
+            self.mana = min(self.mana + 0.05, self.stats['mana'])
 
     def check_exhausted(self):
         if self.energy == 0:

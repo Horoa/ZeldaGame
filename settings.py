@@ -39,8 +39,8 @@ UPGRADE_BG_COLOR_SELECTED = '#EEEEEE'
 # weapons
 weapon_data = {
     'sword': {'cooldown': 100, 'damage': 15, 'energy': 20, 'graphic': './graphics/weapons/sword/full.png'},
-    'lance': {'cooldown': 200, 'damage': 30, 'energy': 35, 'graphic': './graphics/weapons/lance/full.png'},
-    'axe': {'cooldown': 500, 'damage': 50, 'energy': 50, 'graphic': './graphics/weapons/axe/full.png'},
+    'lance': {'cooldown': 200, 'damage': 20, 'energy': 35, 'graphic': './graphics/weapons/lance/full.png'},
+    'axe': {'cooldown': 500, 'damage': 30, 'energy': 50, 'graphic': './graphics/weapons/axe/full.png'},
     'rapier': {'cooldown': 50, 'damage': 8, 'energy': 5, 'graphic': './graphics/weapons/rapier/full.png'},
     'sai': {'cooldown': 80, 'damage': 10, 'energy': 10, 'graphic': './graphics/weapons/sai/full.png'}}
 
@@ -52,7 +52,7 @@ magic_data = {
 
 # enemy
 monster_data = {
-    'squid': {'health': 200, 'exp': 100, 'damage': 30, 'attack_type': 'slash', 'attack_sound': './audio/attack/slash.wav', 'speed': 3, 'resistance': 3, 'attack_radius': 80, 'notice_radius': 360},
-    'raccoon': {'health': 500, 'exp': 250, 'damage': 60, 'attack_type': 'claw',  'attack_sound': './audio/attack/claw.wav', 'speed': 2, 'resistance': 3, 'attack_radius': 120, 'notice_radius': 400},
-    'spirit': {'health': 100, 'exp': 110, 'damage': 40, 'attack_type': 'thunder', 'attack_sound': './audio/attack/fireball.wav', 'speed': 4, 'resistance': 3, 'attack_radius': 60, 'notice_radius': 350},
-    'bamboo': {'health': 150, 'exp': 120, 'damage': 15, 'attack_type': 'leaf_attack', 'attack_sound': './audio/attack/slash.wav', 'speed': 3, 'resistance': 3, 'attack_radius': 50, 'notice_radius': 300}}
+    'squid': {'health': 100, 'exp': 330, 'damage': 15, 'attack_type': 'slash', 'attack_sound': './audio/attack/slash.wav', 'speed': 3, 'resistance': 3, 'attack_radius': 80, 'notice_radius': 360},
+    'raccoon': {'health': 250, 'exp': 500, 'damage': 30, 'attack_type': 'claw',  'attack_sound': './audio/attack/claw.wav', 'speed': 2, 'resistance': 3, 'attack_radius': 120, 'notice_radius': 400},
+    'spirit': {'health': 50, 'exp': 410, 'damage': 20, 'attack_type': 'thunder', 'attack_sound': './audio/attack/fireball.wav', 'speed': 4, 'resistance': 3, 'attack_radius': 60, 'notice_radius': 350},
+    'bamboo': {'health': 75, 'exp': 170, 'damage': 8, 'attack_type': 'leaf_attack', 'attack_sound': './audio/attack/slash.wav', 'speed': 3, 'resistance': 3, 'attack_radius': 50, 'notice_radius': 300}}
